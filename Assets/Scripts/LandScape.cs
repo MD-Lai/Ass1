@@ -12,12 +12,27 @@ public class LandScape : MonoBehaviour {
                                         // results in a 
     public float startRange = 20.0f;    // Pssible height range of the corners upon initialising a new terrain
     public float spacing = 5.0f;        // Horizontal distancec between each vertex
-    public float roughFactor = 2.0f;    // Effect of randomness when calculating each point. 
+    public float roughFactor = 1.4f;    // Effect of randomness when calculating each point. Keep at roughly 1:5 with spacing
     private int max;                    // Calculated maximum number of rows or columns
+    private float range;                // range from lowest to highest
     public float globalMax;
+    public float globalMin;
+    
+    // Lower bound for each "terrain type"
+    public float snowBound = 0.8f;
+    public float rockBound = 0.6f;
+    public float landBound = 0.2f;
+
+    // colour settings
+    // black is added to make sure the Alpha value is pushed up to 1
+    public Color snowColor = Color.white;
+    public Color rockColor = Color.red * 0.359f + Color.green * 0.195f + Color.blue * 0.039f + Color.black; // brown
+    public Color landColor = Color.red * 0.127f + Color.green * 0.697f + Color.blue * 0.165f + Color.black; // A "grassier" green than pure green
+    public Color sandColor = Color.red * 0.953f + Color.green * 0.859f + Color.blue * 0.707f + Color.black; // A "Sandier" green than pure yellow
 
     // Geometry
     private float[,] height;
+
 
     // Use this for initialization
     void Start() {
@@ -29,14 +44,12 @@ public class LandScape : MonoBehaviour {
 
         Mesh mesh = GetComponent<MeshFilter>().mesh;
         mesh.RecalculateNormals();
+        
 
         MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
         renderer.material.shader = shader;
 
-        mainCamera.transform.localPosition = new Vector3(max * spacing / 2 - 0.5f, globalMax, -max * spacing / 2 + 0.5f);
-        mainCamera.transform.localEulerAngles = new Vector3(20, -45, 0);
-        mainCamera.farClipPlane = max * spacing * 1.414f;
-        lightSource.transform.localPosition = new Vector3(max * spacing + globalMax, 0, 0);
+        resetCamLight();
     }
 
     // Update is called once per frame
@@ -47,10 +60,8 @@ public class LandScape : MonoBehaviour {
             this.gameObject.GetComponent<MeshFilter>().mesh = this.CreateTerrainMesh();
             Mesh mesh = GetComponent<MeshFilter>().mesh;
             mesh.RecalculateNormals();
-            mainCamera.transform.localPosition = new Vector3(max * spacing / 2 - 0.5f, globalMax, -max * spacing / 2 + 0.5f);
-            mainCamera.transform.localEulerAngles = new Vector3(20, -45, 0);
-            mainCamera.farClipPlane = max * spacing * 1.414f;
-            lightSource.transform.localPosition = new Vector3(max * spacing + globalMax, 0, 0);
+
+            resetCamLight();
         }
         
 
@@ -65,13 +76,14 @@ public class LandScape : MonoBehaviour {
     /* Main functions */
     // create terrain mesh
     private Mesh CreateTerrainMesh() {
-        globalMax = 0;
+        globalMax = -9999;
+        globalMin = 9999;
         Mesh mesh = new Mesh();
         mesh.name = "Terrain";
 
         Vector3[] newVertices = new Vector3[max * max];                 // max number of vertices per row/col, sizefactor = 8 gives 66,049 vertices
                                                                         // unity doesn't like more than 65,000. 
-        Vector3[] newNormals = new Vector3[max * max];                  // and corresponding number of normals
+        //Vector3[] newNormals = new Vector3[max * max];                  // and corresponding number of normals
         int[] newTriangles = new int[(max - 1) * (max - 1) * 2 * 3];    // max-1 squares per row/col, 2 triangles per square, 3 vertices per triangle
                                                                         
         Color[] newColors = new Color[max * max];
@@ -85,12 +97,34 @@ public class LandScape : MonoBehaviour {
         // perform diamond square algorithm
         DiamondSquare(max);
 
-        // vertices and normals
+        // vertices and colors
         for (row = 0; row < max; row++) {
             for (col = 0; col < max; col++) {
                 newVertices[max * row + col] = new Vector3(spacing * row - max * spacing / 2, height[row, col], spacing * col - max * spacing / 2);
-                newColors[max * row + col] = Color.white;
-                newNormals[max * row + col] = Vector3.forward;
+
+                // set colors based on height and bounds set
+                range = globalMax - globalMin;
+                if(roughFactor == 0) {
+                    // giving a "test environment" look when there's no roughness
+                    newColors[max * row + col] = Color.white / 2;
+                }
+
+                else if (height[row, col] <= globalMin + range * landBound) {
+                    // Sandy
+                    newColors[max * row + col] = sandColor / Random.Range(1.0f,1.5f);
+                }
+                else if (height[row, col] > globalMin + range * landBound && height[row, col] <= globalMin + range * rockBound) {
+                    // Grassy
+                    newColors[max * row + col] = landColor / Random.Range(1.0f, 1.5f);
+                }
+                else if(height[row, col] > globalMin + range * rockBound && height[row, col] <= globalMin + range * snowBound) {
+                    // Brown/Rocky
+                    newColors[max * row + col] = rockColor / Random.Range(1.0f, 1.5f);
+                }
+                else {
+                    // Snowy
+                    newColors[max * row + col] = snowColor / Random.Range(1.0f, 1.5f);
+                }
             }
         }
 
@@ -112,6 +146,27 @@ public class LandScape : MonoBehaviour {
             }
         }
 
+        /* normals
+        for (int i  = 0; i < newNormals.Length; i+=6) {
+            Vector3 point1 = newVertices[newTriangles[i]], point2 = newVertices[newTriangles[i + 1]], point3 = newVertices[newTriangles[i + 2]];
+            Vector3 side1 = point2 - point1, side2 = point3 - point1;
+            Vector3 normalCross1 = Vector3.Cross(side1, side2).normalized;
+
+            newNormals[i] = normalCross1;
+            newNormals[i + 1] = normalCross1;
+            newNormals[i + 2] = normalCross1;
+
+            Vector3 point4 = newVertices[newTriangles[i + 3]], point5 = newVertices[newTriangles[i + 4]], point6 = newVertices[newTriangles[i + 5]];
+            Vector3 side3 = point2 - point1, side4 = point3 - point1;
+            Vector3 normalCross2 = Vector3.Cross(side3, side4).normalized;
+
+            newNormals[i + 3] = normalCross2;
+            newNormals[i + 4] = normalCross2;
+            newNormals[i + 5] = normalCross2;
+
+        }
+        */
+
         mesh.vertices = newVertices;
         mesh.triangles = newTriangles;
         //mesh.normals = newNormals;
@@ -122,10 +177,18 @@ public class LandScape : MonoBehaviour {
 
     // sets the 4 corners of the array
     private void SetCorners() {
+        
         height[0, 0] = Random.Range(-startRange, startRange);
         height[0, max - 1] = Random.Range(-startRange, startRange);
         height[max - 1, 0] = Random.Range(-startRange, startRange);
         height[max - 1, max - 1] = Random.Range(-startRange, startRange);
+        float[] corners = { height[0, 0], height[0, max - 1], height[max - 1, 0], height[max - 1, max - 1] };
+        for (int i = 0; i < corners.Length; i++) {
+            if (corners[i] > globalMax)
+                globalMax = corners[i];
+            if (corners[i] < globalMin)
+                globalMin = corners[i];
+        }
     }
 
     // Generate height map 
@@ -142,7 +205,7 @@ public class LandScape : MonoBehaviour {
 
         for (row = 0; row < max; row += step) {
             for (col = (row + step) % size; col < max; col += size) {
-                Diamond(row, col, step, Random.Range(-size, size) * roughFactor);
+                Diamond(row, col, step, Random.Range(-size , size) * roughFactor);
             }
         }
 
@@ -160,6 +223,8 @@ public class LandScape : MonoBehaviour {
             + rand;
         if (height[row, col] > globalMax)
             globalMax = height[row, col];
+        if (height[row, col] < globalMin)
+            globalMin = height[row, col];
     }
 
     // Generate centre of diamond 
@@ -173,6 +238,8 @@ public class LandScape : MonoBehaviour {
 
         if (height[row, col] > globalMax)
             globalMax = height[row, col];
+        if (height[row, col] < globalMin)
+            globalMin = height[row, col];
     }
 
     // gets average of not out of bound indices
@@ -203,6 +270,14 @@ public class LandScape : MonoBehaviour {
         }
 
         else return height[row, col];
+    }
+
+    // Reset Camera and light
+    private void resetCamLight() {
+        mainCamera.transform.localPosition = new Vector3((max - 1) * spacing / 2, globalMax + 1, (-max + 1) * spacing / 2);
+        mainCamera.transform.localEulerAngles = new Vector3(20, -45, 0);
+        mainCamera.farClipPlane = max * spacing * 2.0f;
+        lightSource.transform.localPosition = new Vector3(max * spacing + globalMax, 0, 0);
     }
 
     // integer exponent, taken from stackoverflow question no. 383587

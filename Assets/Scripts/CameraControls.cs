@@ -23,6 +23,12 @@ public class CameraControls : MonoBehaviour {
         if (Input.GetKey(KeyCode.A)) {
             nextPos -= this.transform.right * speed * Time.deltaTime;
         }
+        if (Input.GetKey(KeyCode.LeftShift)) {
+            nextPos += this.transform.up * speed * Time.deltaTime;
+        }
+        if (Input.GetKey(KeyCode.LeftControl)) {
+            nextPos -= this.transform.up * speed * Time.deltaTime;
+        }
 
         if(nextPos.x > landScape.getMaxBounds()) {
             nextPos = new Vector3(landScape.getMaxBounds(), nextPos.y, nextPos.z);
