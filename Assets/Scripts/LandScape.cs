@@ -24,7 +24,7 @@ public class LandScape : MonoBehaviour {
     public float landBound = 0.2f;
 
     // colour settings
-    // black is added to make sure the Alpha value is pushed up to 1
+    // black is added to make sure the Alpha value is pushed up to at least 1
     public Color snowColor = Color.white;
     public Color rockColor = Color.red * 0.359f + Color.green * 0.195f + Color.blue * 0.039f + Color.black; // brown
     public Color landColor = Color.red * 0.127f + Color.green * 0.697f + Color.blue * 0.165f + Color.black; // A "grassier" green than pure green
@@ -32,6 +32,7 @@ public class LandScape : MonoBehaviour {
 
     // Geometry
     private float[,] height;
+    private float[,] smoothHeight;
 
 
     // Use this for initialization
@@ -92,6 +93,7 @@ public class LandScape : MonoBehaviour {
 
         // set height of corners
         height = new float[max, max];
+        smoothHeight = new float[max, max];
         SetCorners();
 
         // perform diamond square algorithm
@@ -146,30 +148,8 @@ public class LandScape : MonoBehaviour {
             }
         }
 
-        /* normals
-        for (int i  = 0; i < newNormals.Length; i+=6) {
-            Vector3 point1 = newVertices[newTriangles[i]], point2 = newVertices[newTriangles[i + 1]], point3 = newVertices[newTriangles[i + 2]];
-            Vector3 side1 = point2 - point1, side2 = point3 - point1;
-            Vector3 normalCross1 = Vector3.Cross(side1, side2).normalized;
-
-            newNormals[i] = normalCross1;
-            newNormals[i + 1] = normalCross1;
-            newNormals[i + 2] = normalCross1;
-
-            Vector3 point4 = newVertices[newTriangles[i + 3]], point5 = newVertices[newTriangles[i + 4]], point6 = newVertices[newTriangles[i + 5]];
-            Vector3 side3 = point2 - point1, side4 = point3 - point1;
-            Vector3 normalCross2 = Vector3.Cross(side3, side4).normalized;
-
-            newNormals[i + 3] = normalCross2;
-            newNormals[i + 4] = normalCross2;
-            newNormals[i + 5] = normalCross2;
-
-        }
-        */
-
         mesh.vertices = newVertices;
         mesh.triangles = newTriangles;
-        //mesh.normals = newNormals;
         mesh.colors = newColors;
 
         return mesh;
@@ -211,7 +191,6 @@ public class LandScape : MonoBehaviour {
 
         DiamondSquare(size / 2);
     }
-
     /* Assisting functions */
     // Generate centre of square
     private void Square(int row, int col, int step, float rand) {
@@ -245,19 +224,12 @@ public class LandScape : MonoBehaviour {
     // gets average of not out of bound indices
     private float average(float point1, float point2, float point3, float point4) {
         float total = 0;
-        int divisor;
+        int divisor = 4;
 
-        // an invalid can only ever happen at one point at a time
-        if (point1 == -1 || point2 == -1 || point3 == -1 || point4 == -1)
-            divisor = 3;
-        else
-            divisor = 4;
-
-        //       if             then     else
-        total += point1 != -1 ? point1 : 0;
-        total += point2 != -1 ? point2 : 0;
-        total += point3 != -1 ? point3 : 0;
-        total += point4 != -1 ? point4 : 0;
+        total += point1;
+        total += point2;
+        total += point3;
+        total += point4;
 
         return total / divisor;
     }
@@ -266,7 +238,7 @@ public class LandScape : MonoBehaviour {
     private float retrieve(int row, int col) {
 
         if (row < 0 || col < 0 || row > max - 1 || col > max - 1) {
-            return -1;
+            return 0;
         }
 
         else return height[row, col];
