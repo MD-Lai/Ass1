@@ -98,11 +98,12 @@ public class LandScape : MonoBehaviour {
 
         // perform diamond square algorithm
         DiamondSquare(max);
+        Soften();
 
         // vertices and colors
         for (row = 0; row < max; row++) {
             for (col = 0; col < max; col++) {
-                newVertices[max * row + col] = new Vector3(spacing * row - max * spacing / 2, height[row, col], spacing * col - max * spacing / 2);
+                newVertices[max * row + col] = new Vector3(spacing * row - max * spacing / 2, smoothHeight[row, col], spacing * col - max * spacing / 2);
 
                 // set colors based on height and bounds set
                 range = globalMax - globalMin;
@@ -111,15 +112,15 @@ public class LandScape : MonoBehaviour {
                     newColors[max * row + col] = Color.white / 2;
                 }
 
-                else if (height[row, col] <= globalMin + range * landBound) {
+                else if (smoothHeight[row, col] <= globalMin + range * landBound) {
                     // Sandy
                     newColors[max * row + col] = sandColor / Random.Range(1.0f,1.5f);
                 }
-                else if (height[row, col] > globalMin + range * landBound && height[row, col] <= globalMin + range * rockBound) {
+                else if (smoothHeight[row, col] > globalMin + range * landBound && smoothHeight[row, col] <= globalMin + range * rockBound) {
                     // Grassy
                     newColors[max * row + col] = landColor / Random.Range(1.0f, 1.5f);
                 }
-                else if(height[row, col] > globalMin + range * rockBound && height[row, col] <= globalMin + range * snowBound) {
+                else if(smoothHeight[row, col] > globalMin + range * rockBound && smoothHeight[row, col] <= globalMin + range * snowBound) {
                     // Brown/Rocky
                     newColors[max * row + col] = rockColor / Random.Range(1.0f, 1.5f);
                 }
@@ -162,13 +163,6 @@ public class LandScape : MonoBehaviour {
         height[0, max - 1] = Random.Range(-startRange, startRange);
         height[max - 1, 0] = Random.Range(-startRange, startRange);
         height[max - 1, max - 1] = Random.Range(-startRange, startRange);
-        float[] corners = { height[0, 0], height[0, max - 1], height[max - 1, 0], height[max - 1, max - 1] };
-        for (int i = 0; i < corners.Length; i++) {
-            if (corners[i] > globalMax)
-                globalMax = corners[i];
-            if (corners[i] < globalMin)
-                globalMin = corners[i];
-        }
     }
 
     // Generate height map 
@@ -191,6 +185,34 @@ public class LandScape : MonoBehaviour {
 
         DiamondSquare(size / 2);
     }
+    // applies a "gaussian" blur to height and stores it in smoothHeight
+    private void Soften() {
+        float total = 0;
+        float divisor = 16;
+
+        for(int x = 0; x < max; x++) {
+            for(int y = 0; y < max; y++) {
+                total = retrieve(x - 1, y - 1) * 1
+                    + retrieve(x - 1, y) * 2
+                    + retrieve(x - 1, y + 1) * 1
+
+                    + retrieve(x, y - 1) * 2
+                    + retrieve(x, y) * 4
+                    + retrieve(x, y + 1) * 2
+
+                    + retrieve(x + 1, y - 1) * 1
+                    + retrieve(x + 1, y) * 2
+                    + retrieve(x + 1, y + 1) * 1;
+
+                smoothHeight[x, y] = total/divisor;
+
+                if (smoothHeight[x, y] > globalMax)
+                    globalMax = smoothHeight[x, y];
+                else if (smoothHeight[x, y] < globalMin)
+                    globalMin = smoothHeight[x, y];
+            }
+        }
+    }
     /* Assisting functions */
     // Generate centre of square
     private void Square(int row, int col, int step, float rand) {
@@ -200,10 +222,6 @@ public class LandScape : MonoBehaviour {
             retrieve(row - step, col + step),  // bottom left
             retrieve(row + step, col + step))  // bottom right
             + rand;
-        if (height[row, col] > globalMax)
-            globalMax = height[row, col];
-        if (height[row, col] < globalMin)
-            globalMin = height[row, col];
     }
 
     // Generate centre of diamond 
@@ -214,17 +232,17 @@ public class LandScape : MonoBehaviour {
             retrieve(row, col + step),  // down
             retrieve(row - step, col))  //left
             + rand;
-
-        if (height[row, col] > globalMax)
-            globalMax = height[row, col];
-        if (height[row, col] < globalMin)
-            globalMin = height[row, col];
     }
 
     // gets average of not out of bound indices
     private float average(float point1, float point2, float point3, float point4) {
         float total = 0;
         int divisor = 4;
+
+        if (point1 == 0 || point2 == 0 || point3 == 0 || point4 == 0)
+            divisor = 3;
+        else
+            divisor = 4;
 
         total += point1;
         total += point2;
@@ -234,7 +252,7 @@ public class LandScape : MonoBehaviour {
         return total / divisor;
     }
 
-    // "safe" retrieve i.e. returns an invalid value if accessing out of range
+    // "safe" retrieve i.e. returns a 0 if accessing out of range
     private float retrieve(int row, int col) {
 
         if (row < 0 || col < 0 || row > max - 1 || col > max - 1) {
