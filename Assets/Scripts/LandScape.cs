@@ -301,4 +301,13 @@ public class LandScape : MonoBehaviour {
     public float getMinBounds() {
         return -max * spacing / 2;
     }
+    public float getMaxHeight() {
+        return globalMax;
+    }
+    public float getMinHeight() {
+        return globalMin;
+    }
+    public float getRange() {
+        return range;
+    }
 }
