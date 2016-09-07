@@ -100,7 +100,7 @@ Shader "Unlit/PhongShader"
 
 				// Calculate specular reflections
 				float Ks = 0.1f;
-				float specN = 5; // Values>>1 give tighter highlights
+				float specN = 2; // Values>>1 give tighter highlights
 				float3 V = normalize(_WorldSpaceCameraPos - v.worldvert.xyz);
 				float3 R = 2 * LdotN * v.worldnorm.xyz - L;
 				float3 spe = fAtt * _PointLightColor.rgb * Ks * pow(saturate(dot(V, R)), specN);
