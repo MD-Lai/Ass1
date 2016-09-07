@@ -192,19 +192,26 @@ public class LandScape : MonoBehaviour {
 
         for(int x = 0; x < max; x++) {
             for(int y = 0; y < max; y++) {
-                total = retrieve(x - 1, y - 1) * 1
-                    + retrieve(x - 1, y) * 2
-                    + retrieve(x - 1, y + 1) * 1
+                if (x == 0 || y == 0 || x == max - 1 || y == max - 1) {
+                    smoothHeight[x, y] = height[x, y];
+                }
+                else {
 
-                    + retrieve(x, y - 1) * 2
-                    + retrieve(x, y) * 4
-                    + retrieve(x, y + 1) * 2
+                    total = retrieve(x - 1, y - 1) * 1      // top left
+                        + retrieve(x - 1, y) * 2            // top middle
+                        + retrieve(x - 1, y + 1) * 1        // top right
 
-                    + retrieve(x + 1, y - 1) * 1
-                    + retrieve(x + 1, y) * 2
-                    + retrieve(x + 1, y + 1) * 1;
+                        + retrieve(x, y - 1) * 2            // middle left
+                        + retrieve(x, y) * 4                // middle middle
+                        + retrieve(x, y + 1) * 2            // middle right
 
-                smoothHeight[x, y] = total/divisor;
+                        + retrieve(x + 1, y - 1) * 1        // bottom left
+                        + retrieve(x + 1, y) * 2            // bottom middle
+                        + retrieve(x + 1, y + 1) * 1;       // bottom right
+
+
+                    smoothHeight[x, y] = total / divisor;
+                }
 
                 if (smoothHeight[x, y] > globalMax)
                     globalMax = smoothHeight[x, y];
@@ -239,6 +246,7 @@ public class LandScape : MonoBehaviour {
         float total = 0;
         int divisor = 4;
 
+        // odds of being exactly 0 is slim to none, and can be pretty sure it's an invalid value
         if (point1 == 0 || point2 == 0 || point3 == 0 || point4 == 0)
             divisor = 3;
         else
@@ -293,5 +301,4 @@ public class LandScape : MonoBehaviour {
     public float getMinBounds() {
         return -max * spacing / 2;
     }
-
 }
