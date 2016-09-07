@@ -3,8 +3,9 @@ using System.Collections;
 
 public class CameraControls : MonoBehaviour {
     public LandScape landScape;
-    public float speed = 200;    // units per second
-    public float rotation = 20; // degrees per second
+    public float speed = 200;          
+    public float rotation = 80;         
+    public float lookSensitivity = 40;
     void Update() {
         Vector3 nextPos = this.transform.localPosition;
 
@@ -57,6 +58,6 @@ public class CameraControls : MonoBehaviour {
             this.transform.Rotate(new Vector3(0, 0, -rotation * Time.deltaTime));
         }
 
-        this.transform.Rotate(new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0) * rotation * Time.deltaTime);
+        this.transform.Rotate(new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0) * lookSensitivity * Time.deltaTime);
     }
 }
