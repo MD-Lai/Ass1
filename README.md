@@ -43,3 +43,5 @@ Code was mostly written by yours truly, but hugely assisted by the following sit
 http://www.playfuljs.com/realistic-terrain-in-130-lines/
 and an integer exponent function adapted to limit the exponent from:
 http://stackoverflow.com/questions/383587
+
+As a leftover from testing, bump the ball floating around the world origin for entertainment.
