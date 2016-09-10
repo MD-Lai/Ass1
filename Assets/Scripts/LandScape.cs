@@ -64,7 +64,8 @@ public class LandScape : MonoBehaviour {
          
         if (Input.GetKeyDown(KeyCode.C)) {
             max = IntPow(2, sizeFactor) + 1;
-            this.gameObject.GetComponent<MeshFilter>().mesh = this.CreateTerrainMesh();
+            //this.gameObject.GetComponent<MeshFilter>().mesh = this.CreateTerrainMesh();
+            terrainMeshFilter.mesh = this.CreateTerrainMesh();
             terrainMesh = GetComponent<MeshFilter>().mesh;
             terrainCollider.sharedMesh = GetComponent<MeshFilter>().mesh;
             terrainRenderer = this.gameObject.GetComponent<MeshRenderer>();
@@ -72,7 +73,6 @@ public class LandScape : MonoBehaviour {
             resetCamLight();
         }
         
-
         // Pass updated light positions to shader
         terrainRenderer.material.SetColor("_PointLightColor", this.lightSource.color);
         terrainRenderer.material.SetVector("_PointLightPosition", this.lightSource.GetWorldPosition());
@@ -82,8 +82,8 @@ public class LandScape : MonoBehaviour {
     /* Main functions */
     // create terrain mesh
     private Mesh CreateTerrainMesh() {
-        globalMax = -9999;
-        globalMin = 9999;
+        globalMax = -9999 * spacing;
+        globalMin = 9999 * spacing;
         Mesh mesh = new Mesh();
         mesh.name = "Terrain";
 
@@ -302,10 +302,10 @@ public class LandScape : MonoBehaviour {
         return ret;
     }
     public float getMaxBounds() {
-        return (max - 1) * spacing / 2;
+        return (max) * spacing / 2;
     }
     public float getMinBounds() {
-        return -(max - 1) * spacing / 2;
+        return -(max) * spacing / 2;
     }
     public float getMaxHeight() {
         return globalMax;
@@ -317,6 +317,6 @@ public class LandScape : MonoBehaviour {
         return range;
     }
     public float getWaterLevel() {
-        return globalMin + range * landBound;
+        return globalMin + (range * landBound * 0.95f); // lowered a bit so sand can show through
     }
 }
