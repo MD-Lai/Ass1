@@ -33,6 +33,10 @@ public class LandScape : MonoBehaviour {
     // Geometry
     private float[,] height;
     private float[,] smoothHeight;
+    private MeshFilter terrainMeshFilter;
+    private Mesh terrainMesh;
+    private MeshRenderer terrainRenderer;
+    private MeshCollider terrainCollider;
 
 
     // Use this for initialization
@@ -40,15 +44,17 @@ public class LandScape : MonoBehaviour {
 
         max = IntPow(2, sizeFactor) + 1;
 
-        MeshFilter terrainMesh = this.gameObject.AddComponent<MeshFilter>();
-        terrainMesh.mesh = this.CreateTerrainMesh();
+        terrainMeshFilter = this.gameObject.AddComponent<MeshFilter>();
+        terrainMeshFilter.mesh = this.CreateTerrainMesh();
 
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
-        mesh.RecalculateNormals();
+        terrainMesh = GetComponent<MeshFilter>().mesh;
+
+        terrainRenderer = this.gameObject.AddComponent<MeshRenderer>();
+        terrainRenderer.material.shader = shader;
+
+        terrainCollider = this.gameObject.AddComponent<MeshCollider>();
+        terrainCollider.sharedMesh = this.GetComponent<MeshFilter>().mesh;
         
-
-        MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
-        renderer.material.shader = shader;
 
         resetCamLight();
     }
@@ -59,18 +65,19 @@ public class LandScape : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.C)) {
             max = IntPow(2, sizeFactor) + 1;
             this.gameObject.GetComponent<MeshFilter>().mesh = this.CreateTerrainMesh();
-            Mesh mesh = GetComponent<MeshFilter>().mesh;
-            mesh.RecalculateNormals();
+            terrainMesh = GetComponent<MeshFilter>().mesh;
+            terrainCollider.sharedMesh = GetComponent<MeshFilter>().mesh;
+            terrainRenderer = this.gameObject.GetComponent<MeshRenderer>();
 
             resetCamLight();
         }
         
 
-        MeshRenderer renderer = this.gameObject.GetComponent<MeshRenderer>();
+        
 
         // Pass updated light positions to shader
-        renderer.material.SetColor("_PointLightColor", this.lightSource.color);
-        renderer.material.SetVector("_PointLightPosition", this.lightSource.GetWorldPosition());
+        terrainRenderer.material.SetColor("_PointLightColor", this.lightSource.color);
+        terrainRenderer.material.SetVector("_PointLightPosition", this.lightSource.GetWorldPosition());
 
     }
 
@@ -152,6 +159,7 @@ public class LandScape : MonoBehaviour {
         mesh.vertices = newVertices;
         mesh.triangles = newTriangles;
         mesh.colors = newColors;
+        mesh.RecalculateNormals();
 
         return mesh;
     }
@@ -296,10 +304,10 @@ public class LandScape : MonoBehaviour {
         return ret;
     }
     public float getMaxBounds() {
-        return max * spacing / 2;
+        return (max - 1) * spacing / 2;
     }
     public float getMinBounds() {
-        return -max * spacing / 2;
+        return -(max - 1) * spacing / 2;
     }
     public float getMaxHeight() {
         return globalMax;
@@ -309,5 +317,8 @@ public class LandScape : MonoBehaviour {
     }
     public float getRange() {
         return range;
+    }
+    public float getWaterLevel() {
+        return globalMin + range * landBound;
     }
 }
