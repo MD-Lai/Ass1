@@ -1,26 +1,4 @@
-﻿// Original Cg/HLSL code stub copyright (c) 2010-2012 SharpDX - Alexandre Mutel
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-// Adapted for COMP30019 by Jeremy Nicholson, 10 Sep 2012
-// Adapted further by Chris Ewin, 23 Sep 2013
-// Adapted further (again) by Alex Zable (port to Unity), 19 Aug 2016
+﻿// Phong Shader as adapted from Gouraud shader in the workshop
 
 Shader "Unlit/PhongShader"
 {
@@ -40,12 +18,12 @@ Shader "Unlit/PhongShader"
 			#include "UnityCG.cginc"
 
 			uniform float3 _PointLightColor;    // variables that are set to be the same every render call
-			uniform float3 _PointLightPosition; // set externally
+			uniform float3 _PointLightPosition; // both these set externally
 
-			struct vertIn // gets passed into vertex shader
+			struct vertIn						// gets passed into vertex shader
 			{
 				float4 vertex : POSITION;
-				float4 normal : NORMAL;         // pretty important normal gives direction of normals
+				float4 normal : NORMAL;         // pretty important, normal gives direction of normals
 				float4 color : COLOR;
 			};
 
@@ -99,8 +77,8 @@ Shader "Unlit/PhongShader"
 				float3 dif = fAtt * _PointLightColor.rgb * Kd * v.color.rgb * saturate(LdotN);
 
 				// Calculate specular reflections
-				float Ks = 0.1f;
-				float specN = 2; // Values>>1 give tighter highlights
+				float Ks = 0.15f;
+				float specN = 90; // Values>>1 give tighter highlights
 				float3 V = normalize(_WorldSpaceCameraPos - v.worldvert.xyz);
 				float3 R = 2 * LdotN * v.worldnorm.xyz - L;
 				float3 spe = fAtt * _PointLightColor.rgb * Ks * pow(saturate(dot(V, R)), specN);
