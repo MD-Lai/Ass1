@@ -72,9 +72,6 @@ public class LandScape : MonoBehaviour {
             resetCamLight();
         }
         
-
-        
-
         // Pass updated light positions to shader
         terrainRenderer.material.SetColor("_PointLightColor", this.lightSource.color);
         terrainRenderer.material.SetVector("_PointLightPosition", this.lightSource.GetWorldPosition());
