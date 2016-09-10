@@ -1,7 +1,10 @@
 # Ass1
-Graphics and Interaction diamond square algorithm terrain generator 
-Written By Marvin Lai
-Student Number 754672
+Graphics and Interaction diamond square algorithm terrain generator.
+Written By Marvin Lai.
+Student Number 754672.
+
+Should work by just opening mainScene and pressing play
+Controls: w/s for forward/backward, a/d for left/rigt, q/e for rotate left/right, lshift/lctrl for up/down, mouse controls for look
 
 Works on standard diamond square algorithm,
 heightmap is a 2d array of floats always of a max size (2^n) + 1 where n <= 7 this may be referred to as the grid from now on,
@@ -36,7 +39,7 @@ the mesh is then passed to the phong shader as completed in the workshop to rend
 Water is created as a plane at 95% the upper limit of the "sand" boundary so a little bit of sand does show through,
 the color is a 75% opaque pure blue and rendered by the standard unity transparent shader. 
 
-Code was mostly written by yours truly, but hugely assisted by the following sites: 
+Code was mostly written by yours truly, but hugely assisted by the following site: 
 http://www.playfuljs.com/realistic-terrain-in-130-lines/
-and an integer exponent function taken from:
+and an integer exponent function adapted to limit the exponent from:
 http://stackoverflow.com/questions/383587
