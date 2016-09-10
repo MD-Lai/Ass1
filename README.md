@@ -35,3 +35,6 @@ the mesh is then passed to the phong shader as completed in the workshop to rend
 
 Water is created as a plane at 95% the upper limit of the "sand" boundary so a little bit of sand does show through
 the color is a 75% opaque pure blue and rendered by the standard unity transparent shader. 
+
+Code was all written by hand, but hugely assisted by the following site: 
+http://www.playfuljs.com/realistic-terrain-in-130-lines/
