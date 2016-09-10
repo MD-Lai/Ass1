@@ -19,7 +19,13 @@ public class CameraControls : MonoBehaviour {
         Vector3 nextPos = this.transform.localPosition;
 
         Vector3 totalVel = Vector3.zero;
-
+        // Move faster with alt
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            speed = speed * 2;
+        }
+        if (Input.GetKeyUp(KeyCode.Space)) {
+            speed = speed / 2;
+        }
         // Keyboard translation
         // Forward
         if (Input.GetKey(KeyCode.W)) {

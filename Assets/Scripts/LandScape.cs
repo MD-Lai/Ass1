@@ -34,7 +34,7 @@ public class LandScape : MonoBehaviour {
     private float[,] height;
     private float[,] smoothHeight;
     private MeshFilter terrainMeshFilter;
-    private Mesh terrainMesh;
+    //private Mesh terrainMesh;
     private MeshRenderer terrainRenderer;
     private MeshCollider terrainCollider;
 
@@ -47,7 +47,7 @@ public class LandScape : MonoBehaviour {
         terrainMeshFilter = this.gameObject.AddComponent<MeshFilter>();
         terrainMeshFilter.mesh = this.CreateTerrainMesh();
 
-        terrainMesh = GetComponent<MeshFilter>().mesh;
+        //terrainMesh = GetComponent<MeshFilter>().mesh;
 
         terrainRenderer = this.gameObject.AddComponent<MeshRenderer>();
         terrainRenderer.material.shader = shader;
@@ -64,9 +64,8 @@ public class LandScape : MonoBehaviour {
          
         if (Input.GetKeyDown(KeyCode.C)) {
             max = IntPow(2, sizeFactor) + 1;
-            //this.gameObject.GetComponent<MeshFilter>().mesh = this.CreateTerrainMesh();
             terrainMeshFilter.mesh = this.CreateTerrainMesh();
-            terrainMesh = GetComponent<MeshFilter>().mesh;
+            //terrainMesh = GetComponent<MeshFilter>().mesh;
             terrainCollider.sharedMesh = GetComponent<MeshFilter>().mesh;
             terrainRenderer = this.gameObject.GetComponent<MeshRenderer>();
 

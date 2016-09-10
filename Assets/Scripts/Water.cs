@@ -3,7 +3,6 @@ using System.Collections;
 
 public class Water : MonoBehaviour {
     public LandScape landScape;
-    public Shader shader;
     public PointLight lightSource;
     Color color;
 
@@ -12,30 +11,34 @@ public class Water : MonoBehaviour {
     private Mesh waterMesh;
     private MeshRenderer waterRenderer;
     private MeshCollider waterCollider;
+    private Material waterMaterial;
+
     // Use this for initialization
     void Start () {
-        color = new Color(0,0,1,0.5f);
+        color = new Color(0,0,1,0.75f);
 
         waterMeshFilter = this.gameObject.AddComponent<MeshFilter>();
         waterMeshFilter.mesh = this.CreateWaterMesh();
         
         waterRenderer = this.gameObject.AddComponent<MeshRenderer>();
-        waterRenderer.material.shader = shader;
         waterRenderer.material.color = color;
 
         waterCollider = this.gameObject.AddComponent<MeshCollider>();
         waterCollider.sharedMesh = this.GetComponent<MeshFilter>().mesh;
-        
+
+        waterMaterial = new Material(Shader.Find("Standard"));
+        doSomethingThatUnityShouldveDoneInOneLine();
+
+        GetComponent<Renderer>().material = waterMaterial;
     }
 	
 	// Update is called once per frame
 	void Update () {
+        waterMaterial.SetColor("_Color", color);
         if (waterLevel != landScape.getWaterLevel()) {
             waterMeshFilter.mesh = this.CreateWaterMesh();
             waterCollider.sharedMesh = this.GetComponent<MeshFilter>().mesh;
         }
-        waterRenderer.material.SetColor("_PointLightColor", this.lightSource.color);
-        waterRenderer.material.SetVector("_PointLightPosition", this.lightSource.GetWorldPosition());
     }
 
     private Mesh CreateWaterMesh() {
@@ -62,5 +65,16 @@ public class Water : MonoBehaviour {
         water.RecalculateNormals();
 
         return water;
+    }
+    private void doSomethingThatUnityShouldveDoneInOneLine() {
+        // for some reason unity doesn't update these settings until it's touched in inspector...
+        waterMaterial.SetFloat("_Mode", 3);
+        waterMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        waterMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        waterMaterial.SetInt("_ZWrite", 0);
+        waterMaterial.DisableKeyword("_ALPHATEST_ON");
+        waterMaterial.EnableKeyword("_ALPHABLEND_ON");
+        waterMaterial.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+        waterMaterial.renderQueue = 3000;
     }
 }
