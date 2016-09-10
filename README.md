@@ -4,7 +4,7 @@ Written By Marvin Lai.
 Student Number 754672.
 
 Should work by just opening mainScene and pressing play
-Controls: w/s for forward/backward, a/d for left/rigt, q/e for rotate left/right, lshift/lctrl for up/down, mouse controls for look
+Controls: w/s for forward/backward, a/d for left/rigt, q/e for rotate anticlockwise/clockwise, lshift/lctrl for up/down, mouse controls for look
 
 Works on standard diamond square algorithm,
 heightmap is a 2d array of floats always of a max size (2^n) + 1 where n <= 7 this may be referred to as the grid from now on,
